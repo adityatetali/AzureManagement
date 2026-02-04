@@ -1,7 +1,6 @@
 module "iam" {
   source  = "app.terraform.io/adityatetaliorg/iam/azure"
-  version = "0.1.1"
-
+  version = "0.1.2"
   resource_group_name = "rg-iam-prod"
   location            = "Central US"
 
