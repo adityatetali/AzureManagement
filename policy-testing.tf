@@ -2,7 +2,6 @@
   module "policy" {
   source  = "app.terraform.io/adityatetaliorg/policy/azure"
   version = "0.0.1"
-}
   scope_id = "/subscriptions/941863f5-fa95-4a2e-b1bc-7b46fd5e0236"
 
   policy_definitions = {
