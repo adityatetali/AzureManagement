@@ -1,8 +1,9 @@
 module "iam" {
-  source  = "app.terraform.io/adityatetaliorg/iam/azure"
-  version = "0.1.2"
-  resource_group_name = "rg-iam-prod"
-  location            = "Central US"
+  source                = "app.terraform.io/adityatetaliorg/iam/azure"
+  version               = "0.1.10"
+  create_resource_group = true
+  resource_group_name   = "rg-iam-test"
+  location              = "Central US"
 
   managed_identities = {
     "app-identity" = {
@@ -32,7 +33,7 @@ module "iam" {
       custom_role    = true
       role_name      = "custom-reader"
       principal_id   = "9e9ef130-b8b7-47ee-bfc5-9a6b19383a23"
-      principal_type = "Member"
+      principal_type = "User"
     }
   }
 

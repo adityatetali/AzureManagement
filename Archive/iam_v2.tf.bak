@@ -1,0 +1,95 @@
+# Alternative IAM configuration with v2 naming
+# Use this file INSTEAD OF iam.tf, not together
+# To use: rename iam.tf to iam.tf.bak and keep this as iam_v2.tf
+# Or run: terraform plan -var-file="iam_v2.tf" (if converted to tfvars)
+
+# NOTE: This file is standalone - do not use with iam.tf simultaneously
+#
+# DEPENDENCY CHAIN (handled automatically by module):
+# 1. Resource Group is created first (if create_resource_group = true)
+# 2. Managed Identities and Custom Roles wait for Resource Group
+# 3. Role Assignments wait for both Custom Roles and Managed Identities
+# This ensures that when you assign a custom role or managed identity,
+# those resources already exist in Azure.
+
+module "iam_v2" {
+  source  = "app.terraform.io/adityatetaliorg/iam/azure"
+  version = "0.1.10"
+
+  create_resource_group = true
+  location              = "Central US"
+  resource_group_name   = "rg-iam-v2-test"
+
+  # Feature toggles
+  enable_managed_identities = true
+  enable_custom_roles       = true
+  enable_role_assignments   = true
+
+  managed_identities = {
+    "app-identity-1" = {
+      tags = {
+        Environment = "Production"
+        Application = "WebApp"
+      }
+    }
+    "app-identity-2" = {
+      tags = {
+        Environment = "Staging"
+        Application = "API"
+      }
+    }
+  }
+
+  custom_roles = {
+    "custom-storage-reader" = {
+      description = "Custom read-only role for storage accounts"
+      actions = [
+        "Microsoft.Storage/storageAccounts/blobServices/containers/read",
+        "Microsoft.Storage/storageAccounts/blobServices/read",
+        "Microsoft.Storage/storageAccounts/read"
+      ]
+      not_actions      = []
+      data_actions     = []
+      not_data_actions = []
+    }
+    "custom-vm-operator" = {
+      description = "Custom role for VM operations"
+      actions = [
+        "Microsoft.Compute/virtualMachines/start/action",
+        "Microsoft.Compute/virtualMachines/restart/action",
+        "Microsoft.Compute/virtualMachines/deallocate/action",
+        "Microsoft.Compute/virtualMachines/read"
+      ]
+      not_actions      = []
+      data_actions     = []
+      not_data_actions = []
+    }
+  }
+
+  role_assignments = {
+    "assign-storage-reader" = {
+      scope              = "/subscriptions/38fe3474-4d82-4029-a49f-ba81a9ab017b/resourceGroups/rg-iam-v2-test"
+      custom_role        = true
+      role_name          = "custom-storage-reader"
+      role_definition_id = ""
+      principal_id       = "9e9ef130-b8b7-47ee-bfc5-9a6b19383a23"
+      principal_type     = "User"
+    }
+    "assign-reader" = {
+      scope              = "/subscriptions/38fe3474-4d82-4029-a49f-ba81a9ab017b/resourceGroups/rg-iam-v2-test"
+      custom_role        = false
+      role_name          = ""
+      role_definition_id = "/subscriptions/38fe3474-4d82-4029-a49f-ba81a9ab017b/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+      principal_id       = "9e9ef130-b8b7-47ee-bfc5-9a6b19383a23"
+      principal_type     = "User"
+    }
+  }
+
+  tags = {
+    Application  = "TestApp"
+    Agency       = "TestAgency"
+    Project_code = "TEST001"
+    Environment  = "Development"
+    Owner        = "team@example.com"
+  }
+}
