@@ -10,7 +10,7 @@ data "azurerm_virtual_network" "hub_eastus2" {
 }
 
 module "private_dns_blob" {
-  source = "../../modules/private-dns-hub-link"
+  source  = "app.terraform.io/adityatetaliorg/dns_links/azure"
 
   dns_zone_name        = "privatelink.blob.core.windows.net"
   resource_group_name  = "rg-private-dns"
@@ -31,7 +31,7 @@ module "private_dns_blob" {
 
 # Example: multiple private DNS zones for different services, each linked to both hub VNets
 module "private_dns_zones" {
-  source   = "../../modules/private-dns-hub-link"
+  source  = "app.terraform.io/adityatetaliorg/dns_links/azure"
   for_each = toset([
     "privatelink.database.windows.net",
     "privatelink.vaultcore.azure.net",
